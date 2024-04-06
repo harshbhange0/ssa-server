@@ -6,5 +6,4 @@ export const routerA = Router();
 
 routerA.post("/create", SignIn);
 // protectedRouts
-routerA.post("/verify", validateAdmin, generateAdminToken);
-
+routerA.get("/verify", validateAdmin, generateAdminToken);

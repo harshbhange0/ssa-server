@@ -1,26 +1,38 @@
 import jwt from "jsonwebtoken";
-const secrete = process.env.JWT_SECRETE;
+import { AdminType } from "../types";
 
-export const generateSignInToken = async (data: any) => {
+export const generateSignInToken = async (data: AdminType) => {
+  const secrete = process.env.JWT_SECRETE;
   if (secrete) {
-    const token = await jwt.sign(data, secrete, { expiresIn: "12h" });
+    const token = await jwt.sign(
+      { _id: data._id, email: data.email, name: data.name },
+      secrete,
+      { expiresIn: "12h" }
+    );
+    console.log(token, "src/utils/JwtToken.ts:9:1");
     return token;
   }
-  return null;
+  throw new Error("No Jwt Secrete src/utils/JwtToken.ts:10:1");
 };
 
-export const generateAuthToken = async (data: any) => {
+export const generateAuthToken = async (data: AdminType) => {
+  const secrete = process.env.JWT_SECRETE;
   if (secrete) {
-    const token = await jwt.sign(data, secrete, { expiresIn: "1d" });
+    const token = await jwt.sign(
+      { _id: data._id, email: data.email, name: data.name },
+      secrete,
+      { expiresIn: "1d" }
+    );
     return token;
   }
-  return null;
+  throw new Error("No Jwt Secrete src/utils/JwtToken.ts:18:1");
 };
 
-export const    validateToken = async (token: string) => {
+export const validateToken = async (token: string) => {
+  const secrete = process.env.JWT_SECRETE;
   if (secrete) {
     const verify = await jwt.verify(token, secrete);
     return verify;
   }
-  return null;
+  throw new Error("No Jwt Secrete src/utils/JwtToken.ts:26:1");
 };
