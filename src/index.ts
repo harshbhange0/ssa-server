@@ -7,12 +7,11 @@ const app = express();
 const port = 3000;
 dotenv.config();
 app.use(express.json());
-app.get("/", (req: Request, res: Response, next: NextFunction) => {
+app.get("/", (req: Request, res: Response) => {
   user + 1;
   console.log(`User Connected : ${user}`);
-  next();
-
-  res.json({ health: "running", data, user }).status(200);
+  const url = process.env.DATA_BASE_URL;
+  res.json({ health: "running", data, user, url }).status(200);
 });
 let user = 0;
 app.use("/api/v1", routerG);
