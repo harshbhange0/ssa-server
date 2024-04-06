@@ -29,18 +29,19 @@ export const SignIn = async (req: Request, res: Response) => {
   }
 };
 
-export const validateAdmin = async (req: Request, res: Response) => {
+export const generateAdminToken = async (req: Request, res: Response) => {
   try {
     const token = req.header("signInToken");
-    if (!token) {
-      return res.status(403).json({ auth: false, error: "No Token Provided." });
-    }
-    const verify = await validateToken(token);
-    if (verify) {
-      return res.json({ auth: true, admin: verify }).status(200);
+    if (token) {
+      const verify = await validateToken(token);
+      if (verify) {
+        return res.json({ auth: true, admin: verify }).status(200);
+      }
     }
   } catch (error) {
     console.log(error);
-    return res.json({ auth: false, error: "Internal Server Error" }).status(500);
+    return res
+      .json({ auth: false, error: "Internal Server Error" })
+      .status(500);
   }
 };
