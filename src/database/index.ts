@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export async function ConnectDB() {
+export  function ConnectDB() {
   const url = process.env.DATA_BASE_URL;
   if (url) {
     mongoose
