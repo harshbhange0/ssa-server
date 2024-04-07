@@ -39,11 +39,17 @@ export const SignUp = async (
         name: newUser.name,
       });
       if (token) {
+        const signInToken = await updateSignInToken({
+          _id: newUser._id.toString(),
+          email: newUser.email,
+          name: newUser.name,
+        });
         return ApiResponse({
           res,
           data: newUser._id,
           msg: "sign up successful",
           token,
+          signInToken,
           code: 200,
         });
       }
