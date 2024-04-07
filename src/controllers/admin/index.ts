@@ -1,8 +1,12 @@
 import express, { Request, Response } from "express";
 import admin from "../../models/admin";
 import { AdminSignInSchema } from "../../types";
-import { generateSignInToken, validateToken } from "../../utils/JwtToken";
-import { ApiResponse } from "../../utils/helper";
+import {
+  generateAuthToken,
+  generateSignInToken,
+  validateToken,
+} from "../../utils/JwtToken";
+import { ApiResponse, updateSignInToken } from "../../utils/helper";
 
 export const SignUp = async (
   req: Request,
@@ -29,7 +33,7 @@ export const SignUp = async (
           code: 404,
         });
       }
-      const token = await generateSignInToken({
+      const token = await generateAuthToken({
         email: newUser.email,
         _id: newUser._id.toString(),
         name: newUser.name,
@@ -83,7 +87,7 @@ export const SignIn = async (
         code: 404,
       });
     }
-    const token = await generateSignInToken({
+    const token = await generateAuthToken({
       email: exUser.email,
       _id: exUser._id.toString(),
       name: exUser.name,
@@ -96,11 +100,17 @@ export const SignIn = async (
         code: 401,
       });
     }
+    const signInToken = await updateSignInToken({
+      _id: exUser._id.toString(),
+      email: exUser.email,
+      name: exUser.name,
+    });
     return ApiResponse({
       res,
       data: exUser._id,
       msg: "sign up successful",
       token,
+      signInToken,
       code: 200,
     });
   } catch (error) {
@@ -110,6 +120,57 @@ export const SignIn = async (
       data: error,
       msg: "Internal Server Error",
       code: 401,
+    });
+  }
+};
+
+export const checkSignInToken = async (
+  req: Request,
+  res: Response
+): Promise<Response<any, Record<string, any>>> => {
+  const id = req.params.id;
+  if (!id) {
+    return ApiResponse({
+      res,
+      data: { auth: false },
+      msg: "id required",
+      code: 404,
+    });
+  }
+  try {
+    const signInUser = await admin.findById({ _id: id });
+    if (!signInUser?.signInToken) {
+      return ApiResponse({
+        res,
+        data: { auth: false },
+        msg: "Pleas Sing in first.",
+        code: 405,
+      });
+    }
+    const verifiedToken = await validateToken(signInUser?.signInToken);
+
+    //@ts-ignore
+    if (verifiedToken.email !== signInUser?.email) {
+      return ApiResponse({
+        res,
+        data: { auth: false },
+        msg: "Invalid token or user is not the same person who signed in.",
+        code: 402,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: { auth: true },
+      msg: "Successfully checked Sign In Token.",
+      code: 200,
+    });
+  } catch (error) {
+    console.log(error);
+    return ApiResponse({
+      res,
+      data: error,
+      msg: "Internal Server Error.",
+      code: 500,
     });
   }
 };

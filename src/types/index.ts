@@ -10,9 +10,10 @@ export const AdminSignInSchema = z.object({
 export type AdminType = z.infer<typeof AdminSignInSchema>;
 
 export interface ApiResponseProps {
-  token? : string
-  data?: string| {}| []|null;
+  token?: string;
+  signInToken?: string;
+  data?: string | {} | [] | null;
   msg: string;
   res: Response;
-  code: number
+  code: number;
 }
