@@ -9,7 +9,6 @@ export const generateSignInToken = async (data: AdminType) => {
       secrete,
       { expiresIn: "12h" }
     );
-    console.log(token, "src/utils/JwtToken.ts:9:1");
     return token;
   }
   throw new Error("No Jwt Secrete src/utils/JwtToken.ts:10:1");
