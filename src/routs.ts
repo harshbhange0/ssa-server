@@ -1,43 +1,65 @@
 export const data = [
-  { baseurl: "https://ssa-server.onrender.com/api/v1/" },
+  {
+    baseurl: "https://ssa-server.onrender.com/api/v1/",
+  },
   {
     admin: {
       preUrl: "admin/",
-      signIn: { signIn: "sign-in", method: "post" },
-      signUp: { signUp: "sign-up", method: "post" },
-      verify: { verify: "/verify/:id", method: "get" },
+      signIn: {
+        endpoint: "sign-in",
+        method: "post",
+      },
+      signUp: {
+        endpoint: "sign-up",
+        method: "post",
+      },
+      verify: {
+        endpoint: "/verify/:id",
+        method: "get",
+      },
     },
   },
   {
     quiz: {
       preUrl: "quiz/",
       solved: [{}],
-      attempted:[{}],
+      attempted: [{}],
       unsolved: [
         {
-          create_quiz: "create/quiz",
-          method: "post",
+          create_quiz: {
+            endpoint: "create/quiz",
+            method: "post",
+          },
         },
         {
-          create_question: "create/question",
-          method: "post",
+          create_question: {
+            endpoint: "create/question",
+            method: "post",
+          },
         },
         {
-          get_all_quiz: "all/quiz",
-          method: "get",
+          get_all_quiz: {
+            endpoint: "all/quiz",
+            method: "get",
+          },
         },
         {
-          get_all_admin_quiz: "all/admin/quiz/:adminId",
-          method: "get",
+          get_all_admin_quiz: {
+            endpoint: "all/admin/quiz/:adminId",
+            method: "get",
+          },
         },
         {
-          update_quiz: "update/quiz/:quizId",
-          method: "put",
+          update_quiz: {
+            endpoint: "update/quiz/:quizId",
+            method: "put",
+          },
         },
-
         {
-          update_question: "update/question/:questionId",
-          method: "put",
+          update_question: {
+            endpoint: "update/question/:questionId",
+            method: "put",
+          },
         },
       ],
     },
