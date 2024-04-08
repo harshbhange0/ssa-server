@@ -17,18 +17,22 @@ export interface ApiResponseProps {
   res: Response;
   code: number;
 }
-export interface QuizInputSchema {
-  userId?: string;
-  adminId: string;
-  quizTitle: string;
-  quizTime: string;
-  quizTotalMarks: number;
-  marksScored?: number;
-  questions: QuestionInputSchema[];
-}
-export interface QuestionInputSchema {
-  question: string;
-  options: string[] | number[];
-  answerIndex: Number;
-  quizId: string;
-}
+
+export const QuestionInputSchema = z.object({
+  question: z.string(),
+  options: z.array(z.string()) || z.array(z.number()),
+  answerIndex: z.number().min(0).max(3),
+  quizId: z.string(),
+});
+export const QuizInputSchema = z.object({
+  userId: z.string().optional(),
+  adminId: z.string(),
+  quizTitle: z.string(),
+  quizTime: z.string(),
+  subject: z.string(),
+  quizTotalMarks: z.number(),
+  marksScored: z.number().optional(),
+  questions: z.array(QuestionInputSchema).optional(),
+});
+export type QuestionInputTypes = z.infer<typeof QuestionInputSchema>;
+export type QuizInputTypes = z.infer<typeof QuizInputSchema>;

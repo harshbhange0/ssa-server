@@ -34,3 +34,10 @@ export const updateSignInToken = async ({ email, name, _id }: AdminType) => {
   }
   return signInToken;
 };
+export const findAdmin = async (id: string) => {
+  const exAdmin = await admin.findById({ _id: id });
+  if (!exAdmin) {
+    return null;
+  }
+  return exAdmin;
+};
