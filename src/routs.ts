@@ -1,10 +1,11 @@
 export const data = [
-  { baseurl: "http://localhost:3000/api/v1/" },
+  { baseurl: "https://ssa-server.onrender.com/api/v1/" },
   {
     admin: {
       preUrl: "admin/",
-      signIn: { signIn: "create", method: "post" },
-      verify: { verify: "verify", method: "get" },
+      signIn: { signIn: "sign-in", method: "post" },
+      signUp: { signUp: "sign-up", method: "post" },
+      verify: { verify: "/verify/:id", method: "get" },
     },
   },
 ];
