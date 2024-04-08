@@ -11,7 +11,8 @@ export const data = [
   {
     quiz: {
       preUrl: "quiz/",
-      solved: {},
+      solved: [{}],
+      attempted:[{}],
       unsolved: [
         {
           create_quiz: "create/quiz",
