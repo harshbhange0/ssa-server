@@ -12,7 +12,7 @@ export const validateAdmin = async (
     if (!token) {
       return res.status(403).json({ auth: false, error: "No Token Provided." });
     }
-    const verify = await validateToken(token);
+    const verify = await validateToken(token.split(" ")[1]);
     if (verify) {
       return next();
     }

@@ -4,24 +4,18 @@ import {
   createQuestion,
   getQuiz,
   getQuizByAdmin,
-  updateQuiz,
   updateQuestion,
+  getQuizBySubject,
+  updateQuiz,
 } from "../../../controllers/unsolved_quiz";
-import { validateAdmin } from "../../../middleware";
+// import { updateQuiz } from "../../../controllers/unsolved_quiz/updateQuiz";
 
 export const unsolvedQuizRouter = Router();
 
-unsolvedQuizRouter.post("/create/quiz", validateAdmin, createQuiz);
-unsolvedQuizRouter.post("/create/question", validateAdmin, createQuestion);
-unsolvedQuizRouter.get("/all/quiz", validateAdmin, getQuiz);
-unsolvedQuizRouter.get(
-  "/all/admin/quiz/:adminId",
-  validateAdmin,
-  getQuizByAdmin
-);
-unsolvedQuizRouter.put("/update/quiz/:quizId", validateAdmin, updateQuiz);
-unsolvedQuizRouter.put(
-  "/update/question/:questionId",
-  validateAdmin,
-  updateQuestion
-);
+unsolvedQuizRouter.post("/create/quiz", createQuiz);
+unsolvedQuizRouter.post("/create/question", createQuestion);
+unsolvedQuizRouter.get("/all/quiz", getQuiz);
+unsolvedQuizRouter.get("/all/admin/quiz/:adminId", getQuizByAdmin);
+unsolvedQuizRouter.get("/all/quiz/subject/:subject", getQuizBySubject);
+unsolvedQuizRouter.put("/update/quiz/:quizId", updateQuiz);
+unsolvedQuizRouter.put("/update/question/:questionId", updateQuestion);

@@ -12,8 +12,7 @@ app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   return ApiResponse({ res, data, msg: "server  is running", code: 200 });
 });
-let user = 0;
-app.use("/api/v1", validateApiKey, routerG);
+app.use("/api/v1", routerG);
 ConnectDB();
 app.listen(port, () => {
   console.log(`app listening at http://localhost:${port}`);

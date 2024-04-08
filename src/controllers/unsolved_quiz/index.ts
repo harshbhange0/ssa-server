@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { unsolved_question, unsolved_quiz } from "../../models";
 import { QuestionInputSchema, QuizInputSchema } from "../../types";
-import { ApiResponse, findAdmin } from "../../utils/helper";
+import { ApiResponse, betterZodError, findAdmin } from "../../utils/helper";
 
 export const createQuiz = async (
   req: Request,
@@ -9,9 +9,10 @@ export const createQuiz = async (
 ): Promise<Response<any, Record<string, any>>> => {
   const output = QuizInputSchema.safeParse(req.body);
   if (!output.success) {
+    const errorArray = betterZodError(output.error);
     return ApiResponse({
       res,
-      data: output.error,
+      data: errorArray,
       msg: "Invalid Input",
       code: 401,
     });
@@ -57,9 +58,10 @@ export const createQuestion = async (
 ): Promise<Response<any, Record<string, any>>> => {
   const outPut = QuestionInputSchema.safeParse(req.body);
   if (!outPut.success) {
+    const error = betterZodError(outPut.error);
     return ApiResponse({
       res,
-      data: outPut.error,
+      data: error,
       msg: "Invalid Inputs Question",
       code: 402,
     });
@@ -80,16 +82,15 @@ export const createQuestion = async (
         code: 500,
       });
     }
-    const updateQuiz = await unsolved_quiz.findByIdAndUpdate(
+    const updateQuiz = await unsolved_quiz.updateOne(
       {
         _id: quizId,
       },
-      { questions: newQuestion._id }
+      { $push: { questions: newQuestion._id } }
     );
     return ApiResponse({
       res,
       data: {
-        quizId: updateQuiz?._id,
         questionId: newQuestion._id,
       },
       msg: "question Created  Successfully!",
@@ -125,7 +126,7 @@ export const getQuizByAdmin = async (
       .find({
         adminId,
       })
-      .populate("question");
+      .populate([{ path: "questions", strictPopulate: false }]);
     if (!AdminQuiz) {
       return ApiResponse({
         res,
@@ -141,7 +142,7 @@ export const getQuizByAdmin = async (
       code: 200,
     });
   } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:110:1", error);
+    console.log("Error in /quiz/index.ts:110:1 \n", error);
     return ApiResponse({
       res,
       data: error,
@@ -156,7 +157,9 @@ export const getQuiz = async (
   res: Response
 ): Promise<Response<any, Record<string, any>>> => {
   try {
-    const quiz = await unsolved_quiz.find().populate("question");
+    const quiz = await unsolved_quiz
+      .find()
+      .populate([{ path: "questions", strictPopulate: false }]);
     if (!quiz) {
       return ApiResponse({
         res,
@@ -172,7 +175,43 @@ export const getQuiz = async (
       code: 200,
     });
   } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:110:1", error);
+    console.log("Error in /unsolved/index.ts:155:1 \n", error);
+    return ApiResponse({
+      res,
+      data: error,
+      msg: "Internal Server Error",
+      code: 401,
+    });
+  }
+};
+
+export const getQuizBySubject = async (
+  req: Request,
+  res: Response
+): Promise<Response<any, Record<string, any>>> => {
+  const { subject } = req.params;
+  try {
+    const Quiz = await unsolved_quiz
+      .find({
+        subject,
+      })
+      .populate([{ path: "questions", strictPopulate: false }]);
+    if (Quiz.length <= 0) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "No Quiz Found For " + subject,
+        code: 404,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: Quiz,
+      msg: "Quiz Found For  " + subject,
+      code: 200,
+    });
+  } catch (error) {
+    console.log("Error in /quiz/index.ts:110:1 \n", error);
     return ApiResponse({
       res,
       data: error,
@@ -187,12 +226,26 @@ export const updateQuiz = async (
   res: Response
 ): Promise<Response<any, Record<string, any>>> => {
   const { quizId } = req.params;
-  const { data } = req.body;
+
+  const output = QuizInputSchema.safeParse(req.body);
+  if (!output.success) {
+    const errorArray = betterZodError(output.error);
+    return ApiResponse({
+      res,
+      data: errorArray,
+      msg: "Invalid Input",
+      code: 401,
+    });
+  }
   try {
-    const updatedQuiz = await unsolved_quiz.findByIdAndUpdate(
-      { _id: quizId },
-      { ...data }
-    );
+    const { quizTime, quizTitle, quizTotalMarks } = output.data;
+    const updatedQuiz = await unsolved_quiz
+      .findByIdAndUpdate(
+        { _id: quizId },
+        { quizTitle, quizTotalMarks, quizTime },
+        { new: true }
+      )
+      .exec();
     if (!updatedQuiz) {
       return ApiResponse({
         res,

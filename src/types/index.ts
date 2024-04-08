@@ -26,7 +26,7 @@ export const QuestionInputSchema = z.object({
 });
 export const QuizInputSchema = z.object({
   userId: z.string().optional(),
-  adminId: z.string(),
+  adminId: z.string().optional(),
   quizTitle: z.string(),
   quizTime: z.string(),
   subject: z.string(),

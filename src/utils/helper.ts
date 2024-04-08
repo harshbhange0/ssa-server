@@ -1,6 +1,7 @@
 import admin from "../models/admin";
 import { AdminType, ApiResponseProps } from "../types";
 import { generateSignInToken } from "./JwtToken";
+import { z } from "zod";
 
 export const ApiResponse = ({
   data,
@@ -40,4 +41,12 @@ export const findAdmin = async (id: string) => {
     return null;
   }
   return exAdmin;
+};
+export const betterZodError = (error: z.ZodError<any>) => {
+  let errorMsg: { error: string; path: (string | number)[] }[] = [];
+  error.errors.forEach((err) => {
+    errorMsg.push({ error: err.message, path: err.path });
+  });
+  console.log(errorMsg);
+  return errorMsg;
 };
