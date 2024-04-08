@@ -16,5 +16,8 @@ export const SolveQuestionSchema = new mongoose.Schema({
   quizId: [{ type: mongoose.Schema.Types.ObjectId, ref: "quiz" }],
 });
 
-mongoose.model("solved-quiz", SolvedQuizSchema);
-mongoose.model("solved-question", SolveQuestionSchema);
+export const solved_quiz = mongoose.model("solved-quiz", SolvedQuizSchema);
+export const solved_question = mongoose.model(
+  "solved-question",
+  SolveQuestionSchema
+);

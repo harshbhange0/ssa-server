@@ -4,7 +4,7 @@ export const QuestionSchema = new mongoose.Schema({
   question: { type: String, required: true },
   options: [],
   answerIndex: Number, 
-  quiz: [{ type: mongoose.Schema.Types.ObjectId, ref: "quiz" }],
+  quizId: [{ type: mongoose.Schema.Types.ObjectId, ref: "quiz" }],
 });
 
 export const QuizSchema = new mongoose.Schema({

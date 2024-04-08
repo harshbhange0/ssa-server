@@ -17,3 +17,18 @@ export interface ApiResponseProps {
   res: Response;
   code: number;
 }
+export interface QuizInputSchema {
+  userId?: string;
+  adminId: string;
+  quizTitle: string;
+  quizTime: string;
+  quizTotalMarks: number;
+  marksScored?: number;
+  questions: QuestionInputSchema[];
+}
+export interface QuestionInputSchema {
+  question: string;
+  options: string[] | number[];
+  answerIndex: Number;
+  quizId: string;
+}

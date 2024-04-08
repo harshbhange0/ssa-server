@@ -6,5 +6,6 @@ export const routerA = Router();
 
 routerA.post("/sign-up", SignUp);
 routerA.post("/sign-in", SignIn);
-routerA.get("/verify/:id", checkSignInToken);
+routerA.get("/verify/:id", checkSignInToken)
 // protectedRouts
+

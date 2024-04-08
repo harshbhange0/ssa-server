@@ -7,7 +7,7 @@ export const validateAdmin = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.header("signInToken");
+    const token = req.header("authorization");
     if (!token) {
       return res.status(403).json({ auth: false, error: "No Token Provided." });
     }
