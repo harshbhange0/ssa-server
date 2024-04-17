@@ -5,8 +5,15 @@ import { routerG } from "./routes";
 import { data } from "./routs";
 import { ApiResponse } from "./utils/helper";
 import { validateApiKey } from "./middleware";
+import cors from "cors";
 const app = express();
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 const port = 3000;
+
 dotenv.config();
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {

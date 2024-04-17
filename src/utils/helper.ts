@@ -1,5 +1,6 @@
+import { User } from "../models";
 import admin from "../models/admin";
-import { AdminType, ApiResponseProps } from "../types";
+import { AdminType, ApiResponseProps, UserType } from "../types";
 import { generateSignInToken } from "./JwtToken";
 import { z } from "zod";
 
@@ -30,6 +31,17 @@ export const updateSignInToken = async ({ email, name, _id }: AdminType) => {
     throw new Error("unable to Generate Token ");
   }
   const updateUser = await admin.updateOne({ _id }, { signInToken });
+  if (!updateUser) {
+    throw new Error("unable to update User ");
+  }
+  return signInToken;
+};
+export const updateUserSignInToken = async ({ email, name, _id }: UserType) => {
+  const signInToken = await generateSignInToken({ email, name, _id });
+  if (!signInToken) {
+    throw new Error("unable to Generate Token ");
+  }
+  const updateUser = await User.updateOne({ _id }, { signInToken });
   if (!updateUser) {
     throw new Error("unable to update User ");
   }

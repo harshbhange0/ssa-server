@@ -13,14 +13,45 @@ export const validateAdmin = async (
       return res.status(403).json({ auth: false, error: "No Token Provided." });
     }
     const verify = await validateToken(token.split(" ")[1]);
+    if (!verify) {
+      return ApiResponse({
+        res,
+        data: {
+          auth: false,
+        },
+        msg: "Invalid Token",
+        code: 200,
+      });
+    }
+    return next();
+  } catch (error: any) {
+    console.log(error + "\n/middleware/index.ts:05:01");
+    return ApiResponse({ res, data: null, msg: error.massage, code: 400 });
+  }
+};
+
+export const validateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.header("authorization");
+    if (!token) {
+      return res.status(403).json({ auth: false, error: "No Token Provided." });
+    }
+    const verify = await validateToken(token.split(" ")[1]);
     if (verify) {
       return next();
     }
-  } catch (error) {
-    console.log(error);
-    return res
-      .json({ auth: false, error: "Internal Server Error" })
-      .status(500);
+  } catch (error: any) {
+    console.log(error.message + "\n middleware/index.ts:33:01");
+    return ApiResponse({
+      res,
+      data: { auth: false },
+      msg: error.message,
+      code: 400,
+    });
   }
 };
 
@@ -38,7 +69,11 @@ export const validateApiKey = async (
     return ApiResponse({ res, msg: "Pleas Provide Api Key As Env", code: 200 });
   }
   if (api_key !== ServerKye) {
-    return ApiResponse({ res, msg: "Unauthorized Request", code: 200 });
+    return ApiResponse({
+      res,
+      msg: "Unauthorized Request",
+      code: 200,
+    });
   }
   return next();
 };

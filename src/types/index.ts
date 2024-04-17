@@ -6,8 +6,15 @@ export const AdminSignInSchema = z.object({
   email: z.string().email("Please enter a valid Email"),
   _id: z.string().optional(),
 });
+export const UserSignInSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email("Please enter a valid Email"),
+  _id: z.string().optional(),
+  image: z.string().optional(),
+});
 
 export type AdminType = z.infer<typeof AdminSignInSchema>;
+export type UserType = z.infer<typeof UserSignInSchema>;
 
 export interface ApiResponseProps {
   token?: string;

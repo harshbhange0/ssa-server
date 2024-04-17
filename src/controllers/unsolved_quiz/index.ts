@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { unsolved_question, unsolved_quiz } from "../../models";
 import { QuestionInputSchema, QuizInputSchema } from "../../types";
 import { ApiResponse, betterZodError, findAdmin } from "../../utils/helper";
+import admin from "../../models/admin";
 
 export const createQuiz = async (
   req: Request,
@@ -20,6 +21,16 @@ export const createQuiz = async (
   try {
     const { adminId, quizTime, quizTitle, quizTotalMarks, subject } =
       output.data;
+
+    const ifAdmin = await admin.findOne({ _id: adminId });
+    if (!ifAdmin) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "Admin not found",
+        code: 404,
+      });
+    }
     const NewQuiz = await unsolved_quiz.create({
       quizTitle,
       adminId,
@@ -35,6 +46,10 @@ export const createQuiz = async (
         code: 500,
       });
     }
+    const upA = await admin.findOneAndUpdate(
+      { _id: adminId },
+      { $push: { quiz: NewQuiz._id } }
+    );
     return ApiResponse({
       res,
       data: NewQuiz._id,
@@ -152,6 +167,43 @@ export const getQuizByAdmin = async (
   }
 };
 
+export const getQuizByQuizId = async (
+  req: Request,
+  res: Response
+): Promise<Response<any, Record<string, any>>> => {
+  const { quizId } = req.params;
+  try {
+    const quiz = await unsolved_quiz
+      .findOne({
+        _id: quizId,
+      })
+      .populate([{ path: "questions", strictPopulate: false }])
+      .populate([{ path: "adminId", strictPopulate: false }]);
+    if (!quiz) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "No Quiz Found For This User",
+        code: 404,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: quiz,
+      msg: "Quiz Found",
+      code: 200,
+    });
+  } catch (error) {
+    console.log("Error in /quiz/index.ts:110:1 \n", error);
+    return ApiResponse({
+      res,
+      data: error,
+      msg: "Internal Server Error",
+      code: 401,
+    });
+  }
+};
+
 export const getQuiz = async (
   req: Request,
   res: Response
@@ -185,33 +237,29 @@ export const getQuiz = async (
   }
 };
 
-export const getQuizBySubject = async (
+export const getQuestionById = async (
   req: Request,
   res: Response
 ): Promise<Response<any, Record<string, any>>> => {
-  const { subject } = req.params;
+  const { _id } = req.params;
   try {
-    const Quiz = await unsolved_quiz
-      .find({
-        subject,
-      })
-      .populate([{ path: "questions", strictPopulate: false }]);
-    if (Quiz.length <= 0) {
+    const que = await unsolved_question.findById({ _id });
+    if (!que) {
       return ApiResponse({
         res,
         data: null,
-        msg: "No Quiz Found For " + subject,
+        msg: "Unable to Find Question",
         code: 404,
       });
     }
     return ApiResponse({
       res,
-      data: Quiz,
-      msg: "Quiz Found For  " + subject,
-      code: 200,
+      data: que,
+      msg: "",
+      code: 404,
     });
   } catch (error) {
-    console.log("Error in /quiz/index.ts:110:1 \n", error);
+    console.log("Error in /quiz/index.ts:261:1 \n", error);
     return ApiResponse({
       res,
       data: error,
@@ -238,18 +286,18 @@ export const updateQuiz = async (
     });
   }
   try {
-    const { quizTime, quizTitle, quizTotalMarks } = output.data;
+    const { quizTime, quizTitle, quizTotalMarks, subject } = output.data;
     const updatedQuiz = await unsolved_quiz
-      .findByIdAndUpdate(
+      .findOneAndUpdate(
         { _id: quizId },
-        { quizTitle, quizTotalMarks, quizTime },
+        { quizTitle, quizTotalMarks, quizTime, subject },
         { new: true }
       )
       .exec();
     if (!updatedQuiz) {
       return ApiResponse({
         res,
-        data: null,
+        data: quizId,
         msg: "unable to update Quiz",
         code: 404,
       });
@@ -279,7 +327,10 @@ export const updateQuestion = async (
   try {
     const updateQuestion = await unsolved_quiz.findByIdAndUpdate(
       { _id: questionId },
-      { ...data }
+      { ...data },
+      {
+        new: true,
+      }
     );
     if (!updateQuestion) {
       return ApiResponse({

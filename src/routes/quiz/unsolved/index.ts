@@ -5,8 +5,9 @@ import {
   getQuiz,
   getQuizByAdmin,
   updateQuestion,
-  getQuizBySubject,
   updateQuiz,
+  getQuizByQuizId,
+  getQuestionById,
 } from "../../../controllers/unsolved_quiz";
 // import { updateQuiz } from "../../../controllers/unsolved_quiz/updateQuiz";
 
@@ -16,6 +17,7 @@ unsolvedQuizRouter.post("/create/quiz", createQuiz);
 unsolvedQuizRouter.post("/create/question", createQuestion);
 unsolvedQuizRouter.get("/all/quiz", getQuiz);
 unsolvedQuizRouter.get("/all/admin/quiz/:adminId", getQuizByAdmin);
-unsolvedQuizRouter.get("/all/quiz/subject/:subject", getQuizBySubject);
+unsolvedQuizRouter.get("/admin/quiz/:quizId", getQuizByQuizId);
+unsolvedQuizRouter.get("/admin/quiz/question/:_id", getQuestionById);
 unsolvedQuizRouter.put("/update/quiz/:quizId", updateQuiz);
 unsolvedQuizRouter.put("/update/question/:questionId", updateQuestion);

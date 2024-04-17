@@ -1,9 +1,8 @@
-import express, { Request, Response } from "express";
+import  { Request, Response } from "express";
 import admin from "../../models/admin";
 import { AdminSignInSchema } from "../../types";
 import {
   generateAuthToken,
-  generateSignInToken,
   validateToken,
 } from "../../utils/JwtToken";
 import { ApiResponse, updateSignInToken } from "../../utils/helper";
@@ -166,7 +165,7 @@ export const checkSignInToken = async (
     }
     return ApiResponse({
       res,
-      data: { auth: true },
+      data: { auth: true, user: signInUser },
       msg: "Successfully checked Sign In Token.",
       code: 200,
     });
@@ -180,3 +179,33 @@ export const checkSignInToken = async (
     });
   }
 };
+
+export const Me = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const user = await admin.findOne({ _id: id });
+    if (!user) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "User not found",
+        code: 404,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: user,
+      msg: "User found",
+      code: 200,
+    });
+  } catch (error) {
+    console.log("Error in signup controller/user/index.ts:87:1", error);
+    return ApiResponse({
+      res,
+      data: error,
+      msg: "Internal Server Error",
+      code: 401,
+    });
+  }
+};
+
