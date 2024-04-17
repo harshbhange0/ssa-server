@@ -12,7 +12,7 @@ app.use(
     origin: "*",
   })
 );
-const port = 3000;
+const port = process.env.PROT|| 3000;
 
 dotenv.config();
 app.use(express.json());
