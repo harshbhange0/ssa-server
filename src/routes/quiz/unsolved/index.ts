@@ -1,23 +1,29 @@
 import { Router } from "express";
 import {
-  createQuiz,
   createQuestion,
-  getQuiz,
-  getQuizByAdmin,
-  updateQuestion,
-  updateQuiz,
-  getQuizByQuizId,
-  getQuestionById,
+  createQuiz,
+  deleteQuestionById,
+  deleteQuizById,
+  getAllQuizByAdminId,
+  getOneQuestionsById,
+  getOneQuizById,
+  updateQuestionById,
+  updateQuizById,
 } from "../../../controllers/unsolved_quiz";
-// import { updateQuiz } from "../../../controllers/unsolved_quiz/updateQuiz";
 
 export const unsolvedQuizRouter = Router();
 
-unsolvedQuizRouter.post("/create/quiz", createQuiz);
-unsolvedQuizRouter.post("/create/question", createQuestion);
-unsolvedQuizRouter.get("/all/quiz", getQuiz);
-unsolvedQuizRouter.get("/all/admin/quiz/:adminId", getQuizByAdmin);
-unsolvedQuizRouter.get("/admin/quiz/:quizId", getQuizByQuizId);
-unsolvedQuizRouter.get("/admin/quiz/question/:_id", getQuestionById);
-unsolvedQuizRouter.put("/update/quiz/:quizId", updateQuiz);
-unsolvedQuizRouter.put("/update/question/:questionId", updateQuestion);
+unsolvedQuizRouter.post("/create/quiz", createQuiz); //
+unsolvedQuizRouter.get("/get/all/quiz/by/admin/:adminId", getAllQuizByAdminId); //
+unsolvedQuizRouter.get("/get/one/quiz/:quizId", getOneQuizById); //
+unsolvedQuizRouter.put("/update/one/quiz/:quizId", updateQuizById); //
+unsolvedQuizRouter.delete("/delete/one/quiz/:quizId", deleteQuizById); //
+
+unsolvedQuizRouter.post("/create/question/:quizId", createQuestion); //
+// unsolvedQuizRouter.get("/get/all/question/by/quiz/:quizId");
+unsolvedQuizRouter.get("/get/one/question/:questionId", getOneQuestionsById); //
+unsolvedQuizRouter.put("/update/one/question/:questionId", updateQuestionById);
+unsolvedQuizRouter.delete(
+  "/delete/one/question/:questionId",
+  deleteQuestionById
+);

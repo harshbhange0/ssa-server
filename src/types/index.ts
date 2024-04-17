@@ -22,24 +22,22 @@ export interface ApiResponseProps {
   data?: string | {} | [] | null;
   msg: string;
   res: Response;
-  code: number;
+  code?: number;
 }
 
-export const QuestionInputSchema = z.object({
-  question: z.string(),
-  options: z.array(z.string()) || z.array(z.number()),
-  answerIndex: z.number().min(0).max(3),
-  quizId: z.string(),
+export const CreateQuizSchema = z.object({
+  quizTitle: z.string().min(1, { message: "Quiz Title is required" }),
+  adminId: z.string().min(1, { message: "Admins Id is required" }),
+  subject: z.string().min(1, { message: "Subject is required" }),
+  quizTotalMarks: z
+    .number()
+    .min(1, { message: "Quiz Total Marks is required" }),
 });
-export const QuizInputSchema = z.object({
-  userId: z.string().optional(),
-  adminId: z.string().optional(),
-  quizTitle: z.string(),
-  quizTime: z.string(),
-  subject: z.string(),
-  quizTotalMarks: z.number(),
-  marksScored: z.number().optional(),
-  questions: z.array(QuestionInputSchema).optional(),
+export const CreateQuestionSchema = z.object({
+  question: z.string().min(1, { message: "Question is required" }),
+  answerIndex: z.number().min(1, { message: "Answer is required" }),
+  options: z.array(z.string().min(1, { message: "Options is required" })),
 });
-export type QuestionInputTypes = z.infer<typeof QuestionInputSchema>;
-export type QuizInputTypes = z.infer<typeof QuizInputSchema>;
+
+export type CreateQuizType = z.infer<typeof CreateQuizSchema>;
+export type CreateQuestionType = z.infer<typeof CreateQuestionSchema>;

@@ -7,4 +7,5 @@ const AdminSchema = new mongoose.Schema({
   quiz: [{ type: mongoose.Schema.Types.ObjectId, ref: "quiz", require: false }],
 },{timestamps:true});
 
-export default mongoose.model("admin", AdminSchema);
+const Admin = mongoose.model("admin", AdminSchema);
+export default Admin

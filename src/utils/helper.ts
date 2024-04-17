@@ -5,8 +5,8 @@ import { generateSignInToken } from "./JwtToken";
 import { z } from "zod";
 
 export const ApiResponse = ({
-  data,
-  code,
+  data=null,
+  code=200,
   msg,
   res,
   token,

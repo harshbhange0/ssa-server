@@ -1,190 +1,137 @@
 import { Request, Response } from "express";
 import { unsolved_question, unsolved_quiz } from "../../models";
-import { QuestionInputSchema, QuizInputSchema } from "../../types";
-import { ApiResponse, betterZodError, findAdmin } from "../../utils/helper";
-import admin from "../../models/admin";
 
-export const createQuiz = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const output = QuizInputSchema.safeParse(req.body);
-  if (!output.success) {
-    const errorArray = betterZodError(output.error);
-    return ApiResponse({
-      res,
-      data: errorArray,
-      msg: "Invalid Input",
-      code: 401,
-    });
-  }
+import { ApiResponse, betterZodError } from "../../utils/helper";
+import Admin from "../../models/admin";
+import { CreateQuestionSchema, CreateQuizSchema } from "../../types";
+
+/**
+ *
+ * -------------------------------Quiz Controllers-----------------------------------
+ *
+ */
+
+/**
+ *The createQuiz function creates a new quiz with the given admin ID, subject, quiz title, and quiz total marks. It also updates the admin's list of quizzes with the new quiz ID.
+ * @param req
+ * @param res
+ * @argument adminId | subject | quizTitle | quizTotalMarks | subject
+ * @returns
+ */
+export const createQuiz = async (req: Request, res: Response) => {
   try {
-    const { adminId, quizTime, quizTitle, quizTotalMarks, subject } =
-      output.data;
-
-    const ifAdmin = await admin.findOne({ _id: adminId });
-    if (!ifAdmin) {
+    const outPut = CreateQuizSchema.safeParse(req.body);
+    if (!outPut.success) {
+      const error = betterZodError(outPut.error);
       return ApiResponse({
         res,
-        data: null,
-        msg: "Admin not found",
-        code: 404,
+        data: error,
+        msg: "unable to pars inputs",
+        code: 400,
       });
     }
-    const NewQuiz = await unsolved_quiz.create({
-      quizTitle,
+    const { adminId, quizTitle, quizTotalMarks, subject } = outPut.data;
+    const newQuiz = await unsolved_quiz.create({
       adminId,
-      subject,
       quizTotalMarks,
-      quizTime,
+      quizTitle,
+      subject,
     });
-    if (!NewQuiz) {
+    if (!newQuiz._id) {
       return ApiResponse({
         res,
         data: null,
-        msg: "Error while creating the quiz",
-        code: 500,
+        msg: "unable to create quiz",
+        code: 400,
       });
     }
-    const upA = await admin.findOneAndUpdate(
+    const updatedAAdmin = await Admin.findOneAndUpdate(
       { _id: adminId },
-      { $push: { quiz: NewQuiz._id } }
+      { $push: { quiz: newQuiz._id } }
     );
-    return ApiResponse({
-      res,
-      data: NewQuiz._id,
-      code: 200,
-      msg: "Quiz created successfully",
-    });
-  } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:07:1", error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
-    });
-  }
-};
-
-export const createQuestion = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const outPut = QuestionInputSchema.safeParse(req.body);
-  if (!outPut.success) {
-    const error = betterZodError(outPut.error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Invalid Inputs Question",
-      code: 402,
-    });
-  }
-  const { answerIndex, options, question, quizId } = outPut.data;
-  try {
-    const newQuestion = await unsolved_question.create({
-      answerIndex,
-      options,
-      question,
-      quizId,
-    });
-    if (!newQuestion) {
+    if (!updatedAAdmin?._id) {
       return ApiResponse({
         res,
-        data: null,
-        msg: "unable to create  the question",
-        code: 500,
+        msg: "quiz Created But Unable to Update Admin",
+        code: 402,
       });
     }
-    const updateQuiz = await unsolved_quiz.updateOne(
-      {
-        _id: quizId,
-      },
-      { $push: { questions: newQuestion._id } }
-    );
     return ApiResponse({
       res,
-      data: {
-        questionId: newQuestion._id,
-      },
-      msg: "question Created  Successfully!",
-      code: 500,
+      data: newQuiz,
+      msg: "quiz created successfully",
+      code: 201,
     });
   } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:55:1", error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
-    });
-  }
-};
-
-export const getQuizByAdmin = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const { adminId } = req.params;
-  const exAdmin = await findAdmin(adminId);
-  if (!exAdmin) {
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:createQuiz:08:01 \n",
+      error
+    );
     return ApiResponse({
       res,
       data: null,
-      msg: "Invalid Admin ID",
-      code: 403,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
     });
   }
+};
+/**
+ *The getAllQuizByAdminId function retrieves all quizzes associated with the given admin ID.
+ * @param req
+ * @param res
+ * @argument adminId
+ * @returns
+ */
+export const getAllQuizByAdminId = async (req: Request, res: Response) => {
   try {
-    const AdminQuiz = await unsolved_quiz
-      .find({
-        adminId,
-      })
-      .populate([{ path: "questions", strictPopulate: false }]);
-    if (!AdminQuiz) {
+    const { adminId } = req.params;
+    const quizzes = await unsolved_quiz.find({ adminId }).populate("questions");
+    if (quizzes.length < 0) {
       return ApiResponse({
         res,
         data: null,
-        msg: "No Quiz Found For This User",
-        code: 404,
+        msg: "No Quiz Found",
+        code: 400,
       });
     }
     return ApiResponse({
       res,
-      data: AdminQuiz,
-      msg: "Quiz Found ",
+      data: quizzes,
+      msg: "Quiz Found",
       code: 200,
     });
   } catch (error) {
-    console.log("Error in /quiz/index.ts:110:1 \n", error);
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:getAllQuizByAdminId:55:01 \n",
+      error
+    );
     return ApiResponse({
       res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
     });
   }
 };
-
-export const getQuizByQuizId = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const { quizId } = req.params;
+/**
+ *The getOneQuizById function retrieves a single quiz with the given ID.
+ * @param req
+ * @param res
+ * @argument quizId
+ * @returns
+ */
+export const getOneQuizById = async (req: Request, res: Response) => {
   try {
+    const { quizId } = req.params;
     const quiz = await unsolved_quiz
-      .findOne({
-        _id: quizId,
-      })
-      .populate([{ path: "questions", strictPopulate: false }])
-      .populate([{ path: "adminId", strictPopulate: false }]);
+      .findOne({ _id: quizId })
+      .populate("questions");
     if (!quiz) {
       return ApiResponse({
         res,
         data: null,
-        msg: "No Quiz Found For This User",
-        code: 404,
+        msg: "No Quiz Found",
+        code: 400,
       });
     }
     return ApiResponse({
@@ -194,165 +141,321 @@ export const getQuizByQuizId = async (
       code: 200,
     });
   } catch (error) {
-    console.log("Error in /quiz/index.ts:110:1 \n", error);
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:getOneQuizById:87:01 \n",
+      error
+    );
     return ApiResponse({
       res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
     });
   }
 };
-
-export const getQuiz = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
+/**
+ *The updateQuizById function updates the quiz with the given ID with new values for the quiz title, quiz total marks, and subject.
+ * @param req
+ * @param res
+ * @argument quizId
+ * @returns
+ */
+export const updateQuizById = async (req: Request, res: Response) => {
   try {
-    const quiz = await unsolved_quiz
-      .find()
-      .populate([{ path: "questions", strictPopulate: false }]);
+    const { quizId } = req.params;
+    const outPut = CreateQuizSchema.safeParse(req.body);
+    if (!outPut.success) {
+      const error = betterZodError(outPut.error);
+      return ApiResponse({
+        res,
+        data: error,
+        msg: "unable to pars inputs",
+        code: 400,
+      });
+    }
+    const { quizTitle, quizTotalMarks, subject } = outPut.data;
+    const quiz = await unsolved_quiz.findOneAndUpdate(
+      { _id: quizId },
+      {
+        quizTitle,
+        quizTotalMarks,
+        subject,
+      },
+      {
+        new: true,
+      }
+    );
     if (!quiz) {
       return ApiResponse({
         res,
         data: null,
-        msg: "No Quiz Available",
-        code: 404,
+        msg: "No Quiz Found",
+        code: 400,
       });
     }
     return ApiResponse({
       res,
       data: quiz,
-      msg: "Quiz List",
+      msg: "Quiz Found",
       code: 200,
     });
   } catch (error) {
-    console.log("Error in /unsolved/index.ts:155:1 \n", error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
-    });
-  }
-};
-
-export const getQuestionById = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const { _id } = req.params;
-  try {
-    const que = await unsolved_question.findById({ _id });
-    if (!que) {
-      return ApiResponse({
-        res,
-        data: null,
-        msg: "Unable to Find Question",
-        code: 404,
-      });
-    }
-    return ApiResponse({
-      res,
-      data: que,
-      msg: "",
-      code: 404,
-    });
-  } catch (error) {
-    console.log("Error in /quiz/index.ts:261:1 \n", error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
-    });
-  }
-};
-
-export const updateQuiz = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const { quizId } = req.params;
-
-  const output = QuizInputSchema.safeParse(req.body);
-  if (!output.success) {
-    const errorArray = betterZodError(output.error);
-    return ApiResponse({
-      res,
-      data: errorArray,
-      msg: "Invalid Input",
-      code: 401,
-    });
-  }
-  try {
-    const { quizTime, quizTitle, quizTotalMarks, subject } = output.data;
-    const updatedQuiz = await unsolved_quiz
-      .findOneAndUpdate(
-        { _id: quizId },
-        { quizTitle, quizTotalMarks, quizTime, subject },
-        { new: true }
-      )
-      .exec();
-    if (!updatedQuiz) {
-      return ApiResponse({
-        res,
-        data: quizId,
-        msg: "unable to update Quiz",
-        code: 404,
-      });
-    }
-    return ApiResponse({
-      res,
-      data: updatedQuiz._id,
-      msg: "Quiz Updated Successfully",
-      code: 200,
-    });
-  } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:183:1", error);
-    return ApiResponse({
-      res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
-    });
-  }
-};
-export const updateQuestion = async (
-  req: Request,
-  res: Response
-): Promise<Response<any, Record<string, any>>> => {
-  const { questionId } = req.params;
-  const { data } = req.body;
-  try {
-    const updateQuestion = await unsolved_quiz.findByIdAndUpdate(
-      { _id: questionId },
-      { ...data },
-      {
-        new: true,
-      }
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:updateQuizById:119:01 \n",
+      error
     );
-    if (!updateQuestion) {
+    return ApiResponse({
+      res,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
+    });
+  }
+};
+/**
+ *The deleteQuizById function deletes the quiz with the given I
+ * @param req
+ * @param res
+ * @argument quizId
+ * @returns
+ */
+export const deleteQuizById = async (req: Request, res: Response) => {
+  try {
+    const { quizId } = req.params;
+    const deletedQuiz = await unsolved_quiz.findByIdAndDelete({ _id: quizId });
+    if (!deletedQuiz?._id) {
       return ApiResponse({
         res,
         data: null,
-        msg: "unable to update Quiz",
+        msg: "unable to delete quiz",
+        code: 400,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: deletedQuiz,
+      msg: "Quiz Deleted",
+      code: 200,
+    });
+  } catch (error) {
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:deleteQuizById:184:01 \n",
+      error
+    );
+    return ApiResponse({
+      res,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
+    });
+  }
+};
+
+/**
+ *
+ * -------------------------------Question Controllers-----------------------------------
+ *
+ */
+
+/**
+ * The createQuestion function creates a new question with the given quiz ID, question text, options, and answer index. It also updates the quiz's list of questions with the new question ID
+ * @param req
+ * @param res
+ * @argument quizId | question | options[] | answerIndex
+ * @returns
+ */
+export const createQuestion = async (req: Request, res: Response) => {
+  try {
+    const { quizId } = req.params;
+    const outPut = CreateQuestionSchema.safeParse(req.body);
+    if (!outPut.success) {
+      const error = betterZodError(outPut.error);
+      return ApiResponse({
+        res,
+        data: error,
+        msg: "unable to pars inputs",
+        code: 400,
+      });
+    }
+    const { question, options, answerIndex } = outPut.data;
+    const newQuestion = await unsolved_question.create({
+      question,
+      options,
+      answerIndex,
+      quizId,
+    });
+    if (!newQuestion?._id) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "unable to create Question",
+        code: 401,
+      });
+    }
+    const updateQuiz = await unsolved_quiz.findByIdAndUpdate(
+      { _id: quizId },
+      { $push: { questions: newQuestion._id } }
+    );
+    if (!updateQuiz?._id) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "unable to update quiz but Question created",
+        code: 401,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: newQuestion,
+      msg: "Question created",
+      code: 201,
+    });
+  } catch (error) {
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:createQuestion:259:01 \n",
+      error
+    );
+    return ApiResponse({
+      res,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
+    });
+  }
+};
+
+/**
+ *The getOneQuestionsById function retrieves a single question with the given ID.
+ * @param req
+ * @param res
+ * @argument questionId
+ * @returns
+ */
+export const getOneQuestionsById = async (req: Request, res: Response) => {
+  try {
+    const { questionId } = req.params;
+    const question = await unsolved_question.findOne({ _id: questionId });
+    if (!question?._id) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "Unable to find Question",
         code: 404,
       });
     }
     return ApiResponse({
       res,
-      data: updateQuestion._id,
-      msg: "Quiz Updated Successfully",
+      data: question,
+      msg: "Question Found",
+    });
+  } catch (error) {
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:getOneQuestionsById:319:01 \n",
+      error
+    );
+    return ApiResponse({
+      res,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
+    });
+  }
+};
+/**
+ *The updateQuestionById function updates the question with the given ID with new values for the answer index, options, and question text.
+ * @param req
+ * @param res
+ * @argument questionId
+ * @returns
+ */
+export const updateQuestionById = async (req: Request, res: Response) => {
+  try {
+    const { questionId } = req.params;
+    const outPut = CreateQuestionSchema.safeParse(req.body);
+    if (!outPut.success) {
+      const error = betterZodError(outPut.error);
+      return ApiResponse({
+        res,
+        data: error,
+        msg: "unable to pars inputs",
+        code: 400,
+      });
+    }
+    const { answerIndex, options, question } = outPut.data;
+
+    const updatedQuestion = await unsolved_question.findOneAndUpdate(
+      { _id: questionId },
+      {
+        answerIndex,
+        options,
+        question,
+      },
+      { new: true }
+    );
+    if (!updatedQuestion?._id) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "Question Not Found",
+        code: 400,
+      });
+    }
+
+    return ApiResponse({
+      res,
+      data: updatedQuestion,
+      msg: "Question Updated Successfully",
       code: 200,
     });
   } catch (error) {
-    console.log("Error in signup controller/quiz/index.ts:183:1", error);
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:UpdateQuestionsById:349:01 \n",
+      error
+    );
     return ApiResponse({
       res,
-      data: error,
-      msg: "Internal Server Error",
-      code: 401,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
+    });
+  }
+};
+/**
+ *The deleteQuestionById function deletes the question with the given ID.
+ * @param req
+ * @param res
+ * @argument questionId
+ * @returns
+ */
+export const deleteQuestionById = async (req: Request, res: Response) => {
+  try {
+    const { questionId } = req.params;
+    const deleteQuestion = await unsolved_question.findOneAndDelete({
+      _id: questionId,
+    });
+    if (!deleteQuestion?._id) {
+      return ApiResponse({
+        res,
+        data: null,
+        msg: "Question Not Found",
+        code: 400,
+      });
+    }
+    return ApiResponse({
+      res,
+      data: deleteQuestion,
+      msg: "Question Deleted Successfully",
+    });
+  } catch (error) {
+    console.log(
+      "Error In src/controllers/unsolved_quiz/index.ts:deleteQuestionById:402:01 \n",
+      error
+    );
+    return ApiResponse({
+      res,
+      data: null,
+      msg: "Internal Server Error Pleas Check The Server Logs",
+      code: 400,
     });
   }
 };
