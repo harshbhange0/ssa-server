@@ -12,9 +12,9 @@ app.use(
     origin: "*",
   })
 );
-const port = process.env.PROT|| 3000;
-
 dotenv.config();
+const port = process.env.PORT;
+
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   return ApiResponse({ res, data, msg: "server  is running", code: 200 });
