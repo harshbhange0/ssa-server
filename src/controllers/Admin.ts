@@ -4,13 +4,15 @@ import { apiResponse } from "../utils/apiResponse";
 import Admin from "../models/Admin";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken";
+import { betterZodError } from "../utils/betterError";
 
 //?=============================================== Admin SignUp ===========================================
 
 export async function SignUp(req: Request, res: Response) {
   const out = AdminSchemaZod.safeParse(req.body);
   if (!out.success) {
-    return apiResponse(res, "Unable to Pars Inputs", 405);
+    const error = betterZodError(out.error);
+    return apiResponse(res, { message: "unable to pars Inputs", error }, 405);
   }
   const { email, password } = out.data;
   try {
@@ -31,7 +33,7 @@ export async function SignUp(req: Request, res: Response) {
     if (!token) {
       return apiResponse(res, "Unable to create token", 400);
     }
-    return apiResponse(res, { token, auth: true }, 200);
+    return apiResponse(res, { token: "bearer " + token, auth: true }, 200);
   } catch (error: any) {
     console.log(error);
     return apiResponse(res, error, 400);
@@ -43,7 +45,8 @@ export async function SignUp(req: Request, res: Response) {
 export async function SignIn(req: Request, res: Response) {
   const out = AdminSchemaZod.safeParse(req.body);
   if (!out.success) {
-    return apiResponse(res, "Unable to Pars Inputs", 405);
+    const error = betterZodError(out.error);
+    return apiResponse(res, { message: "unable to pars Inputs", error }, 405);
   }
   const { email, password } = out.data;
   try {
@@ -63,11 +66,11 @@ export async function SignIn(req: Request, res: Response) {
       admin._id.toString()
     );
     if (!token) {
-      return apiResponse(res, { token, auth: false }, 400);
+      return apiResponse(res, { auth: false }, 400);
     }
-    return apiResponse(res, { token, auth: true }, 200);
+    return apiResponse(res, { token: "bearer " + token, auth: true }, 200);
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return apiResponse(res, { auth: false }, 500);
   }
 }
