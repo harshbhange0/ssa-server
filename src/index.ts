@@ -1,11 +1,10 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import { ConnectDB } from "./database";
-import { routerG } from "./routes";
 import { data } from "./routs";
-import { ApiResponse } from "./utils/helper";
-import { validateApiKey } from "./middleware";
+
 import cors from "cors";
+import GlobalRouter from "./routes";
 const app = express();
 app.use(
   cors({
@@ -17,9 +16,9 @@ const port = process.env.PORT|| 3000;
 
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
-  return ApiResponse({ res, data, msg: "server  is running", code: 200 });
+  return 
 });
-app.use("/api/v1", routerG);
+app.use("/api/v1", GlobalRouter);
 ConnectDB();
 app.listen(port, () => {
   console.log(`app listening at http://localhost:${port}`);

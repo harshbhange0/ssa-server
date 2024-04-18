@@ -1,15 +1,8 @@
-import { unsolvedQuizRouter } from "./quiz/unsolved";
-import { routerA } from "./admin";
-import { routerU } from "./user";
 import { Router } from "express";
-import { solvedQuizRouter } from "./quiz/solved";
-import { attemptedQuizRouter } from "./quiz/attempted";
-import { validateAdmin } from "../middleware";
+import Admin from "./AdminRoutes";
 
-export const routerG = Router();
+const GlobalRouter = Router();
 
-routerG.use("/admin", routerA);
-routerG.use("/quiz/unsolved", validateAdmin, unsolvedQuizRouter);
-routerG.use("/quiz/solved", solvedQuizRouter);
-routerG.use("/attempted/quiz", attemptedQuizRouter);
-routerG.use("/user", routerU);
+GlobalRouter.use("/admin", Admin);
+
+export default GlobalRouter
