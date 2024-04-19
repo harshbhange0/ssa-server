@@ -1,6 +1,6 @@
 import { Router } from "express";
-import Admin from "./AdminRoutes";
 import { authCheck } from "../middleware";
+import Admin from "./AdminRoutes";
 import QuizRouter from "./QuizRoutes";
 import QueRouter from "./QueRoutes";
 

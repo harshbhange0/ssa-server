@@ -5,6 +5,7 @@ import { data } from "./routs";
 
 import cors from "cors";
 import GlobalRouter from "./routes";
+import { apiResponse } from "./utils/apiResponse";
 const app = express();
 app.use(
   cors({
@@ -16,7 +17,7 @@ const port = process.env.PORT|| 3000;
 
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
-  return 
+  return apiResponse(res,{message:"server running"},200)
 });
 app.use("/api/v1", GlobalRouter);
 ConnectDB();
