@@ -16,6 +16,10 @@ export async function SignUp(req: Request, res: Response) {
   }
   const { email, password } = out.data;
   try {
+    const exAdmin = await Admin.findOne({ email });
+    if (exAdmin) {
+      return apiResponse(res, "Admin already exists", 400);
+    }
     const hashPassword = bcrypt.hashSync(password, 10);
     const newAdmin = await Admin.create({
       email,
@@ -33,7 +37,11 @@ export async function SignUp(req: Request, res: Response) {
     if (!token) {
       return apiResponse(res, "Unable to create token", 400);
     }
-    return apiResponse(res, { token: "bearer " + token, auth: true }, 200);
+    return apiResponse(
+      res,
+      { token: "bearer " + token, auth: true, data: newAdmin._id },
+      200
+    );
   } catch (error: any) {
     console.log(error);
     return apiResponse(res, error, 400);
@@ -68,7 +76,11 @@ export async function SignIn(req: Request, res: Response) {
     if (!token) {
       return apiResponse(res, { auth: false }, 400);
     }
-    return apiResponse(res, { token: "bearer " + token, auth: true }, 200);
+    return apiResponse(
+      res,
+      { token: "bearer " + token, auth: true, data: admin._id },
+      200
+    );
   } catch (error) {
     console.log(error);
     return apiResponse(res, { auth: false }, 500);
