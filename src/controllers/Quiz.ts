@@ -61,7 +61,7 @@ export async function getQuizByAdminId(req: Request, res: Response) {
   const { id } = req.params;
   try {
     const quizzes = await Quiz.find({ Admin: id }).populate("questions");
-    if (!quizzes) {
+    if (quizzes.length === 0) {
       return apiResponse(
         res,
         { message: "unable to get quiz with id", data: id },
