@@ -17,9 +17,9 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   return res
+    .status(200)
     .send({ server: `running ${port}` })
-    .json({ massage: `running ${port}` })
-    .status(200);
+    .json({ massage: `running ${port}` });
 });
 app.use("/api/v1", GlobalRouter);
 ConnectDB();
