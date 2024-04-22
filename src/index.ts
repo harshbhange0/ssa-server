@@ -1,7 +1,6 @@
-import express, {  Request, Response } from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { ConnectDB } from "./database";
-
 
 import cors from "cors";
 import GlobalRouter from "./routes";
@@ -13,11 +12,14 @@ app.use(
   })
 );
 dotenv.config();
-const port = process.env.PORT|| 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
-  return res.send({server:`running ${port}`}).status(200);
+  return res
+    .send({ server: `running ${port}` })
+    .json({ massage: `running ${port}` })
+    .status(200);
 });
 app.use("/api/v1", GlobalRouter);
 ConnectDB();
